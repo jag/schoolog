@@ -1,0 +1,15 @@
+application: skoolog
+version: 1
+runtime: python
+api_version: 1
+
+handlers:
+- url: /styles
+  static_dir: styles
+- url: /scripts
+  static_dir: scripts
+- url: /rdf
+  static_dir: rdf      
+
+- url: /.*
+  script: main.py
