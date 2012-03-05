@@ -19,9 +19,7 @@ from google.appengine.ext.webapp import util
 from google.appengine.ext.webapp import template
 from google.appengine.api import urlfetch
 
-import logging
 import os
-import urllib
 
 class MainHandler(webapp.RequestHandler):
     def get(self):
@@ -31,17 +29,15 @@ class MainHandler(webapp.RequestHandler):
 
 class NytSearch(webapp.RequestHandler):
     def get(self):
-        logging.error("searching!")
         name = self.request.get('name')
         facet= self.request.get('facet')
-        api_key = 'eff3c0f44b1a4de66bdf58dccff8bbf4:12:61430921'
+        api_key = '87267c5caf8c85fff5c5e4dbe20a96de:6:61430921' 
         url = 'http://api.nytimes.com/svc/search/v1/article?format=json&query=' + name.replace(' ','%20') 
         if facet !='':
             url = url + '%20' + facet + ':[' + name.replace(' ','%20').upper() + ']'
         url = url + '&rank=newest&api-key=' + api_key
         result = urlfetch.fetch(url)
         self.response.headers.add_header("Content-Type", 'application/json')
-        logging.error(result.content)
         self.response.out.write(result.content)
 
 def main():

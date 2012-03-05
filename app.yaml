@@ -8,8 +8,6 @@ handlers:
   static_dir: styles
 - url: /scripts
   static_dir: scripts
-- url: /rdf
-  static_dir: rdf      
 
 - url: /.*
   script: main.py

@@ -2,10 +2,10 @@ $(function() {
 	// Suggest school name from freebase
 	$("#school").suggest({type:'/education/university'}
 ).bind("fb-select", function(e, data) {
-	guid = data.guid.substr(1);
+	var guid = data.guid.substr(1);
 
 	// retrieve the school's website
-	envelope = {
+	var envelope = {
 		query: {
 			"id": data.id,
 			"/common/topic/webpage":[{
@@ -50,24 +50,8 @@ $(function() {
 				}
 			}		
 
-			// Get alumni from custom rdf		
-			/*$.ajax({
-			dataType:'json',
-			json:'callback',
-			url:'/customRdf?uri=http://rdf.freebase.com/ns/guid.'+guid,
-			success:function(json) {
-			var alumni = new Array();
-			$.each(json, function(i, item) {
-			var alumnus = new Object();
-			alumnus.name = item;
-			alumnus.thumb = '';
-			alumnus.freebaseUri = '';
-			alumnus.nytId = '';
-			alumni.push(alumnus);
-			});*/
-
 			// Get mid from guid (guids have been deprecated)
-			envelope = {
+			var envelope = {
 				query: {
 					"id": data.id,
 					"mid": null
@@ -80,7 +64,8 @@ $(function() {
 			// set the mid
 			function setMid(response) {
 				if (response.code == "/api/status/ok") {
-					mid = response.result.mid;
+                    $('#alumni').append($('<img></img>').attr('src','/styles/loading-large.gif'));
+					var mid = response.result.mid;
 					// Create a sparql query to get information about the school's alumni
 					var sparql = generateAlumniSparqlRequest(mid);
 
@@ -100,22 +85,29 @@ $(function() {
 									bindings = json.results.bindings;
 									dbPediaAlumni = parseBindings(bindings);
 								}
-								alumni = dbPediaAlumni;//.concat(alumni);
 								$('#alumni').html('');
-								$.each(alumni, function(i, item) {
-									alum = $('<div class="alum"></div>');
+                                $.each(dbPediaAlumni, function(i, item) {
+                                    alum = $('<div class="alum"></div>');
 									img = $('<img></img>').attr('src', item.thumb);
-									link = $('<a></a>').attr('href', item.freebaseUri);
-									link.append(img);
-									alum.append(link);
+									link1 = $('<a class="shownews"></a>').attr('href', '#');
+									link1.append(img);
+									alum.append(link1);
 									span = $('<span></span').text(item.name);
-									alum.append(span);
-									alumnus = $('<li class="alumnus"></li>').attr('id', 'alumnus_' + i).append(alum);
-									$('#alumni').append(alumnus);
-								});
-
-								// Get news and other information about the alumni from New York Times Open Link Data 
-								loadNytimesLinkedData();
+									link2 = $('<a class="showfbase" target="_blank"></a>').attr('href', item.freebaseUri);
+                                    link2.append(span);
+                                    alum.append(link2);
+                                    alumnus = $('<li class="alumnus"></li>').attr('id', 'alumnus_' + i).append(alum);
+                                    $('#alumni').append(alumnus);
+                                    (function(item) {
+                                        $('#alumnus_' + i + ' a.shownews').click(function(event) {
+                                            event.preventDefault();
+                                            loadNytimesLinkedData(item);
+                                            $('html, body').animate({
+                                                scrollTop: $('#news').offset().top
+                                            }, 300);
+                                        });
+                                    })(item);
+                                });
 							}
 						});
 
@@ -147,7 +139,6 @@ $(function() {
 										alumnus.thumb = ""; // insert path to default image here
 									}
 									alumnus.name = binding.name.value;
-									alumnus.nytId = binding.nytId.value;
 									alumni.push(alumnus);
 								}
 							}
@@ -182,21 +173,18 @@ $(function() {
 							// somebody as an alumni or employee of a given school. 
 							//called it schoolRelations for lack of a better name
 							_schoolRelations = [
-							"dbpprop:education",
-							"dbpprop:alumnus ",
-							"dbpedia-owl:college",
-							"dbpedia-owl:almaMater",
-							"dbpprop:workInstitutions", 
-							"dbpprop:workInstitution",
-							"dbpprop:workplaces", 
-							"dbpprop:institution"
+                                "dbpprop:almaMater",
+                                "dbpprop:education",
+                                "dbpprop:alumnus ",
+                                "dbpedia-owl:college",
+                                "dbpedia-owl:almaMater",
+                                "dbpprop:college"
 							];
 
 							var sparql = "SELECT * WHERE {";
 							for(var i = 0; i < _schoolRelations.length; i++) {
 								sparql += "{?alumnus " + _schoolRelations[i] + " ?schoolUri . " +
 								"?alumnus dbpprop:name ?name . " +
-								"?alumnus owl:sameAs ?nytId FILTER regex(?nytId,'http://data\\\\.nytimes\\\\.com/.*') . " +
 								"?alumnus owl:sameAs ?freebaseUri FILTER regex(?freebaseUri,'http://rdf\\\\.freebase\\\\.com/.*') . }";
 								if(i < _schoolRelations.length - 1) {
 									sparql += " UNION ";
@@ -216,28 +204,39 @@ $(function() {
 						* by http://data.nytimes.com and described at 
 						* http://data.nytimes.com/home/about.html
 						*/
-						function loadNytimesLinkedData() {
-							_nytIdIndexMap = [];
-							for(var i = 0; i < alumni.length; i++) {
-								var alumnus = alumni[i];
-								var nytId = alumnus.nytId;
-								if(nytId!='') {
-									_nytIdIndexMap[nytId] = i;
-									$.ajax( {
-										dataType :'jsonp',
-										jsonp :'callback',
-										url :nytId + ".json",
-										success : function(json) {
-											if(json.stat == 'ok') {
-												loadAlumnusDetails(json);
-											}
-										}
-									});
-								}
-								else {
-									querySearchApi(alumnus.name, i, false);
-								}
-							}
+						function loadNytimesLinkedData(alumnus) {
+                            var envelope = {
+                                query: {
+                                    "mid": alumnus.freebaseUri.substring(26),
+                                    "key": [{
+                                            "namespace": "/user/jamie/nytdataid",
+                                            "value": null
+                                            }]
+                                    }
+                                };
+                                $.getJSON("http://api.freebase.com/api/service/mqlread?callback=?",
+                                {query: JSON.stringify(envelope)},  
+                                processNytId);
+                                function processNytId(response) {
+                                    $('#news').empty();
+                                    $('#news').append($('<h1></h1>').text(alumnus.name + ' in the news.'));
+                                    if(response.code == "/api/status/ok" && response.result) {
+                                        var nytId = 'http://data.nytimes.com/' + response.result['key'][0].value;
+                                        $.ajax( {
+                                            dataType :'jsonp',
+                                            jsonp :'callback',
+                                            url :nytId + ".json",
+                                            success : function(json) {
+                                                if(json.stat == 'ok') {
+                                                    loadAlumnusDetails(json);
+                                                }
+                                            }
+                                        });
+                                    }
+                                    else {
+                                        querySearchApi(alumnus.name, false);
+                                    }
+                                }
 						}
 
 						// Contains code from http://open.blogs.nytimes.com/
@@ -254,24 +253,21 @@ $(function() {
 								if(!nytJson[key]["skos:prefLabel"]) {
 									continue;
 								}
-
 								// Obtain and set the topic page link to an alumnus' 
 								// times topics page (more: http://topics.nytimes.com) 
-								var index = _nytIdIndexMap[key];
 								var topicPageUrl = nytJson[key]["nyt:topicPage"];
 								if(topicPageUrl) {
-									elem = '#alumnus_'+index+' .alum';
-									$(elem).append($('<a></a>').attr('href', topicPageUrl).text('Times page'));
+									$('#news').append($('<a></a>').attr('href', topicPageUrl).text('Times page'));
 								}
 								// Query the NYT search API for the specified facet.
 								var facet = nytJson[key]["skos:prefLabel"];
-								querySearchApi(facet, index, true);
+								querySearchApi(facet, true);
 								break;
 							}
 						}
 
 						// This ajax request is handled by our own server because New York Times search api doesn't handle client side callback requests
-						function querySearchApi(name, index, isFaceted) {
+						function querySearchApi(name, isFaceted) {
 							var url = url = "api/search?name="+ escape(name);
 							if(isFaceted) {
 								url = url + "&facet=per_facet";
@@ -283,7 +279,7 @@ $(function() {
 								success : function(json) {
 									if(json.results) {
 										// Display news articles
-										displayAlumnusDetails(json, index);
+										displayAlumnusDetails(json);
 									}
 								}
 							});
@@ -292,7 +288,7 @@ $(function() {
 						/**
 						* Renders the output of The New York Times search API as HTML.
 						*/
-						function displayAlumnusDetails(json, index) {
+						function displayAlumnusDetails(json) {
 							var results = json.results;
 							var html = "";
 							for(var i =0; i < results.length; i++) {
@@ -304,8 +300,8 @@ $(function() {
 								var abstract_text = result.body;
 								var byline = result.byline;
 								var thumbnail = result.small_image_url;
-								var divId = "headline_" + index + "_" + i; 
-								var articleDivId = 'article_'+ index + "_" + i;
+								var divId = "headline_" + i; 
+								var articleDivId = 'article_' + i;
 								html += 
 								"<div class='news-article'><div id = '" + 
 								divId + 
@@ -324,7 +320,7 @@ $(function() {
 								html += '<\/div><\/div>';
 							}
 							// Display the HTML for a given alumnus.
-							$('#alumnus_' + index).append(html);
+							$('#news').append(html);
 						}
 
 						// Code from http://open.blogs.nytimes.com/

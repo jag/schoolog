@@ -4,8 +4,9 @@
 }
 
 body {
+  font-size: 62.5%;
 	color:#000000;
-	font:0.75em 'Lucida Grande',sans-serif;
+	font-family: 'Lucida Grande', sans-serif;
 }
 
 a {
@@ -18,18 +19,16 @@ img{
 }
 
 #header-side {
-	width:250px;
-	height:150px;
-	/*background-image:url('sticker.png');*/
+	width:25em;
+	height:15em;
 	background-repeat:no-repeat;
 	float:right;
 }
 
 #header {
-	font-size:1.0em;
 	color:#FDFDF9;
-	padding:10px 0px 10px 20px;
-	border-bottom:3.0px solid #CD853F;
+	padding:1em 0em 1em 2em;
+	border-bottom:.3333em solid #CD853F;
 	background-color:#827B60;
 }
 
@@ -41,16 +40,16 @@ img{
 	background-image:url('newspaper.gif');
 	background-repeat:no-repeat;
 	background-color:#E8E7E3;
-	width:300px;
-	height:150px;
-	padding-left:250px;
-	margin:20px 0px 40px 20px;
+	width:30em;
+	height:15em;
+	padding-left:25em;
+	margin:2em 0em 4em 2em;
 	float:left;
 }
 
 #search input {
-	margin:5px 5px 5px 5px;
-    width: 200px; 
+  margin:.5em;
+  width: 20em;
 }
 
 #search fieldset {
@@ -58,7 +57,7 @@ img{
 }
 
 form {
-    margin-top: 55px;
+    margin-top: 5.5em;
 }
 
 .text {
@@ -67,14 +66,14 @@ form {
 
 .text label {
 	float:left;
-	width:60px;
+	width:6em;
 	text-align:right;
 }
 
 .text input {
 	float:right;
-	width:150px;
-	padding:2px 2px;
+	width:15em;
+	padding:.2em;
 }
 
 .clear {
@@ -82,44 +81,44 @@ form {
 }
 
 #selected {
-    height:150px;
-    width:150px;
+    height:15em;
+    width:15em;
     float:left;
 }
 
-#selected, #results {
-	margin:20px 0px 10px 20px;
+#selected, #people, #news {
+	margin:2em;
 }
 
-#results {
-    clear:left;
-    width:690px;
+#people, #news {
+  clear:left;
+  float:left;
 }
 
-.alumnus {
-    background-color:#E8E7E3;
-	border:1.0px #999999;
-	margin: 10px 0px 10px 0px;
-	padding: 0px 10px 10px 10px;
-	min-height:95px;
-    list-style-type:none;
+li.alumnus {
+  display: inline-block;
+  width:8em;
+  height: 8em;
+  border: solid 2px white;
+  list-style-type:none;
 }
-
+li.alumnus:hover {
+  border: solid 2px #666;
+}
 .alum {
-    clear:left;
-    padding: 10px 10px 10px 0px;
-    min-height:10px;
+  position: relative;
 }
-
-.alum img, .alum span {
-    float: left;
-    margin-right:10px;
+.alum span {
+  position: absolute;
+  top: 5em;
+  left: .2em;
+  color: white;
+  background: rgb(0, 0, 0);
+  background: rgba(0, 0, 0, .7);
 }
-
-.alum span{
-    font-size: 165%; 
+a.showfbase, a.showfbase:selected, a.showfbase:hover {
+  text-decoration: none;
 }
-
 .news-article {
     margin-bottom:10px;
     padding-bottom:10px;
