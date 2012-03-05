@@ -116,9 +116,6 @@ li.alumnus:hover {
   background: rgb(0, 0, 0);
   background: rgba(0, 0, 0, .7);
 }
-a.showfbase, a.showfbase:selected, a.showfbase:hover {
-  text-decoration: none;
-}
 .news-article {
     margin-bottom:10px;
     padding-bottom:10px;
